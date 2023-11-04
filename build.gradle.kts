@@ -5,4 +5,6 @@ plugins {
     id("com.android.application").apply(false)
     id("com.android.library").apply(false)
     id("org.jetbrains.compose").apply(false)
+    kotlin("plugin.serialization").version("1.9.20").apply(false)
+//    kotlin("native.cocoapods").version("1.9.20").apply(false)
 }

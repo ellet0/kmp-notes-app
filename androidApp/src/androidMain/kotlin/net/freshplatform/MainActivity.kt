@@ -1,4 +1,4 @@
-package com.myapplication
+package net.freshplatform
 
 import MainView
 import android.os.Bundle

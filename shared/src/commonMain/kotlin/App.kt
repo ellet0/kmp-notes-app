@@ -1,38 +1,72 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import data.notes.Note
+import dev.icerock.moko.mvvm.compose.getViewModel
+import dev.icerock.moko.mvvm.compose.viewModelFactory
+import kotlinx.serialization.json.Json
+import logic.services.share.ShareService
+import moe.tlaster.precompose.PreComposeApp
+import moe.tlaster.precompose.navigation.NavHost
+import moe.tlaster.precompose.navigation.path
+import moe.tlaster.precompose.navigation.rememberNavigator
+import presentation.AppTheme
+import presentation.AppThemeConfigurations
+import presentation.screens.note_list.NoteListScreen
+import presentation.screens.note_list.NoteListViewModel
+import presentation.screens.save_note.SaveNoteScreen
+import presentation.utils.navigation.Screens
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
-fun App() {
-    MaterialTheme {
-        var greetingText by remember { mutableStateOf("Hello, World!") }
-        var showImage by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-                greetingText = "Hello, ${getPlatformName()}"
-                showImage = !showImage
-            }) {
-                Text(greetingText)
-            }
-            AnimatedVisibility(showImage) {
-                Image(
-                    painterResource("compose-multiplatform.xml"),
-                    null
-                )
+fun App(
+    appThemeConfigurations: AppThemeConfigurations,
+    shareService: ShareService
+) {
+    PreComposeApp {
+        AppTheme(
+            configurations = appThemeConfigurations,
+        ) {
+
+            val navigator = rememberNavigator()
+            val noteListViewModel = getViewModel(Unit, viewModelFactory { NoteListViewModel() })
+            NavHost(
+                navigator = navigator,
+                initialRoute = Screens.NoteList.name
+            ) {
+                scene(Screens.NoteList.name) {
+                    NoteListScreen(
+                        viewModel = noteListViewModel,
+                        onAddNoteClicked = {
+                            navigator.navigate(
+                                route = Screens.SaveNote.SaveNewNote.name,
+                            )
+                        },
+                        onNoteClicked = { note ->
+                            navigator.navigate(
+                                Screens.SaveNote.SaveExistingNote(
+                                    Json.encodeToString(
+                                        Note.serializer(),
+                                        note
+                                    )
+                                ).name,
+                            )
+                        }
+                    )
+                }
+                scene(Screens.SaveNote.name) { backStackEntry ->
+                    val noteJson: String? = backStackEntry.path<String>("note")
+                    val note: Note? = noteJson?.let {
+                        Json.decodeFromString(
+                            Note.serializer(),
+                            it
+                        )
+                    }
+
+                    SaveNoteScreen(
+                        viewModel = noteListViewModel,
+                        shareService = shareService,
+                        noteToEdit = note,
+                        onRequestNavigateBack = { navigator.goBack() }
+                    )
+                }
             }
         }
     }
