@@ -16,6 +16,7 @@ By the time of creating this simple app the Fresh notes app haven't finished yet
 ![Screenshot 3](readme_images/img3.png)
 ![Screenshot 4](readme_images/img4.png)
 ![Screenshot 5](readme_images/img5.png)
+![Screenshot 6](readme_images/img6.png)
 
 ## Known issues
 1. When you run the app on iOS and get back to the home screen of the system while the app is still not closed, you will get crash, for more [info](https://github.com/Tlaster/PreCompose/issues/173)
